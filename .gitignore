@@ -5,6 +5,8 @@
 
 #ansible other
 secret/
+artifacts/
+credentials/
 
 # terraform
 *.tfstate
