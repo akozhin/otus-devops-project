@@ -1,0 +1,5 @@
+#этот инвентори, дополняет динамический инвентори inventory.gcp.yml
+k8s-cluster:
+  children:
+    kube-master:
+    kube-node:

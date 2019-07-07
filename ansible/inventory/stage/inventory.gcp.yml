@@ -1,0 +1,15 @@
+plugin: gcp_compute
+projects:
+  - project-otus-201902
+filters:
+auth_kind: serviceaccount
+# service_account_file=путь от директории в которой выполняется ansible-playbook
+service_account_file: ./secret/gcp-serviceaccount-ansible-project-otus-201902.json
+groups:
+  kube-master: "'k8s-master' in name"
+  kube-node: "'k8s-node' in name"
+  etcd:  "'k8s-master' in name"
+cache: true
+cache_timeout: 3600
+cache_plugin: yaml
+cache_connection: /tmp/ansible-inventory-cache
