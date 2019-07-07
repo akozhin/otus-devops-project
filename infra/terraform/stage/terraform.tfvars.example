@@ -1,0 +1,3 @@
+project = "project-otus_201902"
+public_key_path = "~/.ssh/appuser.pub"
+private_key_path = "~/.ssh/appuser"

@@ -1,0 +1,21 @@
+# ansible
+*.retry
+*/__pycache__
+*.pyc
+
+#ansible other
+secret/
+
+# terraform
+*.tfstate
+*.tfstate.*.backup
+*.tfstate.backup
+*.tfstate.lock*
+*.tfvars
+.terraform/
+
+# docker-compose
+.env
+
+#other
+project-otus_201902-mnsold.md
