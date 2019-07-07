@@ -1,2 +1,2 @@
-# otus-devops-project-services
+# Финальный проект по курсу Otus DevOps
  

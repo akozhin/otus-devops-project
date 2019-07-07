@@ -1,0 +1,49 @@
+version: '3.3'
+
+services:
+
+  mongo_db:
+    image: mongo:${MONGODB_VERSION}
+    volumes:
+      - mongo_db:/data/db
+    networks:
+      - services_network
+
+  rabbitmq:
+    image: rabbitmq:${RABBITMQ_VERSION}-management
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    labels:
+      NAME: "rabbitmq"
+    networks:
+      - services_network
+
+  crawler:
+    build: ./crawler
+    image: ${USERNAME}/crawler:${CRAWLER_VERSION}
+    networks:
+      - services_network
+    depends_on:
+      - mongo_db
+      - rabbitmq
+
+  search-ui:
+    build: ./search-ui
+    image: ${USERNAME}/search-ui:${SEARCH_UI_VERSION}
+    ports:
+      - 8000:8000
+    networks:
+      - services_network
+    depends_on:
+      - mongo_db
+
+volumes:
+  mongo_db:
+
+networks:
+  services_network:
