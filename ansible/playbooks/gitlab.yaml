@@ -1,0 +1,8 @@
+- name: Install Gitlab
+  hosts: repo:!ungrouped
+  become: true
+
+  roles:
+    - geerlingguy.docker
+    - docker.under.ansible
+    - gitlab

@@ -1,0 +1,27 @@
+version: "3.7"
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:12.0.3-ce.0
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    hostname: gitlab
+    container_name: gitlab
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://{{ inventory_hostname }}'
+        nginx['enable'] = true
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        registry_external_url 'http://{{ inventory_hostname }}:9080'
+        registry['enable'] = true
+    ports:
+      - '80:80'
+      - '9080:9080'
+      - '2222:22'
+    volumes:
+      - {{ gitlab_dir_config }}:/etc/gitlab
+      - {{ gitlab_dir_logs }}:/var/log/gitlab
+      - {{ gitlab_dir_data }}:/var/opt/gitlab
