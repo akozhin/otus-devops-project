@@ -1,0 +1,10 @@
+# RedHat 7 и новее
+- name: Install common packages for server (RedHat 7)
+  yum:
+    name: "{{ item.key }}"
+    state: "{{ item.value.state }}"
+    update_cache: yes
+  with_dict: "{{ list_pkg_for_redhat7 }}"
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version >= "7"

@@ -1,0 +1,37 @@
+---
+# Общий набор пакетов на ОС RedHat 7 и новее
+list_pkg_for_redhat7:
+  ntp:
+    state: latest
+  sudo:
+    state: latest
+  telnet:
+    state: latest
+  python-setuptools:
+    state: latest
+  zip:
+    state: latest
+  unzip:
+    state: latest
+  mlocate:
+    state: latest
+  yum-plugin-security:
+    state: latest
+  p7zip:
+    state: latest
+  wget:
+    state: latest
+  man:
+    state: latest
+  nmon:
+    state: latest
+  htop:
+    state: latest
+  tmux:
+    state: latest
+  net-tools:
+    state: latest
+  traceroute:
+    state: latest
+  nano:
+    state: latest
