@@ -36,6 +36,19 @@ module "k8s_node" {
     instance_tag= "${var.instance_tag_k8s_node}"
 }
 
+module "repo_server" {
+  source           = "../modules/repo_server"
+  zone             = "${var.zone}"
+  public_key_path  = "${var.public_key_path}"
+  private_key_path = "${var.private_key_path}"
+  instance_disk_image   = "${var.instance_disk_image_repo_server}"
+  instance_machine_type = "${var.instance_machine_type_repo_server}"
+  instance_disk_size = "${var.instance_disk_size_repo_server}"
+  instance_pool_count= "${var.instance_pool_count_repo_server}"
+    instance_name = "${var.instance_name_repo_server}"
+    instance_tag= "${var.instance_tag_repo_server}"
+}
+
 # Временно заблокирован модуль по управлению доступом к серверам по SSH
 #module "vpc" {
 #  source        = "../modules/vpc"

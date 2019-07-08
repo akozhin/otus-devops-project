@@ -60,10 +60,10 @@ variable instance_disk_size_k8s_node {
   description = "Размер диска ОС"
   default     = "100"
 }
-//app_pool_nodes
+
 variable instance_pool_count_k8s_node {
   description = "Количество инстансов в пуле"
-  default = "1"
+  default = "2"
 }
 
 variable instance_name_k8s_node {
@@ -74,4 +74,36 @@ variable instance_name_k8s_node {
 variable instance_tag_k8s_node {
   description = "Тег инстанса по умолчанию"
   default     = "k8s-node-tag"
+}
+
+##########################################################
+# repo_server
+##########################################################
+variable instance_disk_image_repo_server {
+  description = "Образ ОС"
+  default     = "rhel-7"
+}
+variable instance_machine_type_repo_server {
+  description = "Тип машины GCP"
+  default     = "n1-standard-2"
+}
+
+variable instance_disk_size_repo_server {
+  description = "Размер диска ОС"
+  default     = "100"
+}
+
+variable instance_pool_count_repo_server {
+  description = "Количество инстансов в пуле"
+  default = "1"
+}
+
+variable instance_name_repo_server {
+  description = "Название инстанса"
+  default     = "repo-server"
+}
+
+variable instance_tag_repo_server {
+  description = "Тег инстанса по умолчанию"
+  default     = "repo-server-tag"
 }
