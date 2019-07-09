@@ -164,7 +164,7 @@ alertmanager:
     ## alertmanager data Persistent Volume existing claim name
     ## Requires alertmanager.persistentVolume.enabled: true
     ## If defined, PVC must be created manually before volume will be bound
-    existingClaim: "pvc-prometheus-alertmanager"
+    existingClaim: ""
 
     ## alertmanager data Persistent Volume mount root path
     ##
@@ -172,7 +172,7 @@ alertmanager:
 
     ## alertmanager data Persistent Volume size
     ##
-    size: 4Gi
+    size: 2Gi
 
     ## alertmanager data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
@@ -182,7 +182,6 @@ alertmanager:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
-    storageClassName: prometheus-alertmanager
 
     ## Subdirectory of alertmanager data Persistent Volume to mount
     ## Useful if the volume's root directory is not empty
@@ -628,7 +627,7 @@ server:
   ingress:
     ## If true, Prometheus server Ingress will be created
     ##
-    enabled: true
+    enabled: false
 
     ## Prometheus server Ingress annotations
     ##
@@ -643,12 +642,9 @@ server:
     ## Prometheus server Ingress hostnames with optional path
     ## Must be provided if Ingress is enabled
     ##
-    #hosts: []
+    hosts: []
     #   - prometheus.domain.com
     #   - domain.com/prometheus
-    hosts:
-      - prometheus.otus.4ippi.ru
-      #- prometheus/prometheus
 
     ## Prometheus server Ingress TLS configuration
     ## Secrets must be manually created in the namespace
@@ -705,7 +701,7 @@ server:
     ## Prometheus server data Persistent Volume existing claim name
     ## Requires server.persistentVolume.enabled: true
     ## If defined, PVC must be created manually before volume will be bound
-    existingClaim: "pvc-prometheus-server"
+    existingClaim: ""
 
     ## Prometheus server data Persistent Volume mount root path
     ##
@@ -713,7 +709,7 @@ server:
 
     ## Prometheus server data Persistent Volume size
     ##
-    size: 12Gi
+    size: 8Gi
 
     ## Prometheus server data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
@@ -723,7 +719,6 @@ server:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
-    storageClassName: prometheus-server
 
     ## Subdirectory of Prometheus server data Persistent Volume to mount
     ## Useful if the volume's root directory is not empty
@@ -791,7 +786,7 @@ server:
     loadBalancerIP: ""
     loadBalancerSourceRanges: []
     servicePort: 80
-    type: NodePort
+    type: ClusterIP
 
   ## Prometheus server pod termination grace period
   ##
@@ -804,7 +799,7 @@ server:
 pushgateway:
   ## If false, pushgateway will not be installed
   ##
-  enabled: false
+  enabled: true
 
   ## Use an alternate scheduler, e.g. "stork".
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
@@ -957,23 +952,19 @@ pushgateway:
 ##
 alertmanagerFiles:
   alertmanager.yml:
-    global:
-      slack_api_url: 'https://hooks.slack.com/services/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'
+    global: {}
+      # slack_api_url: ''
 
-    #receivers:
-      #- name: default-receiver
+    receivers:
+      - name: default-receiver
         # slack_configs:
         #  - channel: '@you'
         #    send_resolved: true
-    receivers:
-    - name: 'slack-notifications'
-      slack_configs:
-      - channel: '#maksim_soldatov'
 
     route:
       group_wait: 10s
       group_interval: 5m
-      receiver: 'slack-notifications'
+      receiver: default-receiver
       repeat_interval: 3h
 
 ## Prometheus server ConfigMap entries
@@ -982,7 +973,7 @@ serverFiles:
 
   ## Alerts configuration
   ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
-  #alerts: {}
+  alerts: {}
   # groups:
   #   - name: Instances
   #     rules:
@@ -994,29 +985,6 @@ serverFiles:
   #         annotations:
   #           description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
   #           summary: 'Instance {{ $labels.instance }} down'
-  alerts:
-    groups:
-    - name: Instances
-      rules:
-      - alert: InstanceDown
-        #expr: avg(up{job="kubernetes-nodes"}) BY (job) < 0.25 <--25% узлов не доступно https://www.robustperception.io/alerting-on-down-instances
-        expr: up{job="kubernetes-nodes"} == 0
-        for: 1m
-        labels:
-          severity: page
-        annotations:
-          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minutes'
-          summary: 'Instance {{ $labels.instance }} down'
-    - name: APIServers
-      rules:
-      - alert: InstanceAPIServerDown
-        expr: up{job="kubernetes-apiservers"} == 0
-        for: 1m
-        labels:
-          severity: page
-        annotations:
-          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute'
-          summary: 'Instance API server {{ $labels.instance }} down'
 
   rules: {}
 
@@ -1114,7 +1082,6 @@ serverFiles:
             regex: (.+)
             target_label: __metrics_path__
             replacement: /api/v1/nodes/$1/proxy/metrics
-            #replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
 
 
       - job_name: 'kubernetes-nodes-cadvisor'
