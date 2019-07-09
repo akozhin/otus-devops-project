@@ -19,7 +19,7 @@ resource "google_compute_firewall" "repo_server_http" {
 
 #registry in gitlab
 resource "google_compute_firewall" "repo_server_9080" {
-  name = "allow-${var.instance_name}-http"
+  name = "allow-${var.instance_name}-9080"
 
   # Название сети, в которой действует правило
   network = "${var.instance_network_interface}"
