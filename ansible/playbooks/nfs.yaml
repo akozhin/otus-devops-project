@@ -1,0 +1,7 @@
+- name: Install NFS Server
+  hosts: nfs-server:!ungrouped
+  become: true
+
+  roles:
+    - geerlingguy.nfs
+

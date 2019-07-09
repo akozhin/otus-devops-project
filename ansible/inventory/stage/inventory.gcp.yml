@@ -10,6 +10,7 @@ groups:
   kube-node: "'k8s-node' in name"
   etcd: "'k8s-master' in name"
   repo: "'repo-server' in name"
+  nfs-server: "'repo-server' in name"
 cache: true
 cache_timeout: 3600
 cache_plugin: yaml

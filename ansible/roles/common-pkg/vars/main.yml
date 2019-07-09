@@ -35,3 +35,5 @@ list_pkg_for_redhat7:
     state: latest
   nano:
     state: latest
+  nfs-utils:
+    state: latest
