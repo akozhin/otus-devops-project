@@ -303,7 +303,118 @@ ansible-playbook -i inventory/stage/ -v -l repo playbooks/gitlab.yaml
 
 GitLab доступен по ссылке http://gitlab.otus.4ippi.ru/
 
-## Развертывание Prometheus
+
+
+### Настройка интеграции GitLab с Kubernetes
+
+В Admin Area > Kubernetes добавляем существующий кластер.
+
+В GitLab входит справка, по нажатию More information под полем, для получения нужной информации для интеграции. Выполнено в соответствии с руководством.
+
+- Получаем API URL:
+
+```sh
+kubectl cluster-info | grep 'Kubernetes master' | awk '/http/ {print $NF}'
+https://104.155.1.48:6443
+```
+
+- Получаем CA certificate:
+
+```sh
+kubectl get secrets|grep -iE "name|default-token"
+NAME                                        TYPE                                  DATA   AGE
+default-token-7cwxq                         kubernetes.io/service-account-token   3      2d13h
+
+kubectl get secret default-token-7cwxq -o jsonpath="{['data']['ca\.crt']}" | base64 --decode
+-----BEGIN CERTIFICATE-----
+MIICyDCCAbCgAwIBAgIBADANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwprdWJl
+cm5ldGVzMB4XDTE5MDcwNzE3Mjc1NFoXDTI5MDcwNDE3Mjc1NFowFTETMBEGA1UE
+...
+llugMIZyGf6TlZfgwkK+u8AiZJs4/dw0MrVViHjF75S7oxv2u6xK8n3uUV/jC24g
+iS0F29ALtIJzPh0LbXAKHa0l7nkSa5MD/tdnyRgih+CATJz1d+vozcKxNI8=
+-----END CERTIFICATE-----
+```
+
+- Получаем Service Token
+
+  - Применяем манифест с пользователем `gitlab-admin`
+
+    ```yaml
+    cat <<EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: gitlab-admin
+      namespace: kube-system
+    ---
+    apiVersion: rbac.authorization.k8s.io/v1beta1
+    kind: ClusterRoleBinding
+    metadata:
+      name: gitlab-admin
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: cluster-admin
+    subjects:
+    - kind: ServiceAccount
+      name: gitlab-admin
+      namespace: kube-system
+    EOF
+    ```
+
+  - Получаем token  пользователя `gitlab-admin`
+
+    ```sh
+    kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep gitlab-admin | awk '{print $1}')
+    ```
+
+    Пример вывода
+
+    ```rst
+    Name:         gitlab-admin-token-4v4lf
+    Namespace:    kube-system
+    Labels:       <none>
+    Annotations:  kubernetes.io/service-account.name: gitlab-admin
+                  kubernetes.io/service-account.uid: 736b3451-a2e3-11e9-8caa-42010a84000e
+    
+    Type:  kubernetes.io/service-account-token
+    
+    Data
+    ====
+    ca.crt:     1025 bytes
+    namespace:  11 bytes
+    token: <authentication_token>
+    ```
+
+- Указываем полученную информацию, завершаем интеграцию.
+
+- В Application устанавливаем 
+
+  - Helm Tiller (ставить первым, до установки др. приложений из списка в интеграции с кластером)
+
+  - GitLab Runner
+
+    > При необходимости можно еще установить доступные приложения из списка в интеграции:
+    >
+    > - Ingress
+    >   Ingress gives you a way to route requests to services based on the request host or path, centralizing a number of services into a single entrypoint. 
+    > - Cert-Manager
+    >   Cert-Manager is a native Kubernetes certificate management controller that helps with issuing certificates. Installing Cert-Manager on your cluster will issue a certificate by Let's Encrypt and ensure that certificates are valid and up-to-date.
+    > - Prometheus
+    >   Prometheus is an open-source monitoring system with GitLab Integration to monitor deployed applications.
+
+- Проверка
+
+  ```sh
+  kubectl get pods -n gitlab-managed-apps
+  NAME                                   READY   STATUS    RESTARTS   AGE
+  runner-gitlab-runner-7c8fb8457-pnxts   1/1     Running   0          38m
+  tiller-deploy-7fb68896db-9bflz         1/1     Running   0          41m
+  ```
+
+  
+
+##Развертывание Prometheus
 
 За основу взят `stable/prometheus` https://hub.helm.sh/charts/stable/prometheus
 
@@ -324,9 +435,37 @@ kubectl apply -f k8s/deployment/pv-prometheus-server.yml -n default
 kubectl apply -f k8s/deployment/pv-prometheus-alertmanager.yml -n default
 ```
 
-Устанавливаем prometheus:
-
 Настройки хранятся в `k8s/helm/prometheus/values.yaml`
+
+Включены модули:
+
+- alertmanager;
+- kubeStateMetrics;
+- nodeExporter;
+
+Для prometheus сервера настроено:
+
+- ingress;
+- persistentVolume, который связан с заранее созданным запросом на том по имени `existingClaim` и классу `storageClassName`;
+- включены jobs
+  - job_name: prometheus
+  - job_name: 'kubernetes-apiservers'
+  - job_name: 'kubernetes-nodes'
+  - job_name: 'kubernetes-nodes-cadvisor'
+  - job_name: 'kubernetes-service-endpoints'
+  - job_name: 'prometheus-pushgateway'
+  - job_name: 'kubernetes-services'
+  - job_name: 'kubernetes-pods'
+
+Для alertmanager настроено:
+
+- интеграция со slack каналом (**но пока не проверена**)
+- persistentVolume, который связан с заранее созданным запросом на том по имени `existingClaim` и классу `storageClassName`;
+- алерты
+  - alert: InstanceDown
+  - alert: InstanceAPIServerDown
+
+Устанавливаем prometheus:
 
 ```sh
 helm upgrade prometheus k8s/helm/prometheus --install

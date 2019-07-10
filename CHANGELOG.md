@@ -1,18 +1,8 @@
 # CHANGELOG
 
-**2019-07-07** Maksim Soldatov
+**2019-07-10** Maksim Soldatov
 
-- добавлена конфигурация terraform для серверов kuibernetes
-- настроен динамический inventory для ansible
-- добавлена ansible конфигурация для kubernbetes
-- запущен kubernetes с использованием kubersparay
-
-**2019-07-08** Maksim Soldatov
-
-- добавлены роли ansible для подготовки серверов
-- добавлены роли ansible для установки/управления docker
-- в конфигурацию terraform добавлен сервер gitlab
-- исправлены некоторые ошибки
+- настроена интеграция GitLab с Kubernetes, в интеграции с кластером установлены приложения GitLab: Helm Tiller, GitLab Runner
 
 **2019-07-09** Maksim Soldatov
 
@@ -23,3 +13,16 @@
 - добавлен балансировщик на kube_nodes
 - исправлены некоторые ошибки
 
+**2019-07-08** Maksim Soldatov
+
+- добавлены роли ansible для подготовки серверов
+- добавлены роли ansible для установки/управления docker
+- в конфигурацию terraform добавлен сервер gitlab
+- исправлены некоторые ошибки
+
+**2019-07-07** Maksim Soldatov
+
+- добавлена конфигурация terraform для серверов kuibernetes
+- настроен динамический inventory для ansible
+- добавлена ansible конфигурация для kubernbetes
+- запущен kubernetes с использованием kubersparay
