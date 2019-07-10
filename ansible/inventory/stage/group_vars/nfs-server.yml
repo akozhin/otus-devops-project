@@ -2,4 +2,4 @@ nfs_exports:
   - /srv/nfs_data/prometheus-server -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
   - /srv/nfs_data/prometheus-alertmanager -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
   - /srv/nfs_data/rabbitmq -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
-  - /srv/nfs_data/mongo -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
+  - /srv/nfs_data/mongodb -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
