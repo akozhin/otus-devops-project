@@ -4,11 +4,11 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: pv-data-rabbit
+  name: pv-data-rabbitmq
 spec:
-  #storageClassName: data-rabbit
+  storageClassName: data-rabbitmq
   capacity:
-    storage: 10Gi
+    storage: 8Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
@@ -20,18 +20,18 @@ spec:
     - hard
     - nfsvers=4.1
   nfs:
-    path: /srv/nfs_data/rabbit
+    path: /srv/nfs_data/rabbitmq
     server: repo-server0
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: pvc-data-rabbit
+  name: pvc-data-rabbitmq
 spec:
-  #storageClassName: data-rabbit
+  storageClassName: data-rabbitmq
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 8Gi

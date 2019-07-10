@@ -202,7 +202,7 @@ ansible-playbook -i inventory/stage/ -v -l repo playbooks/nfs.yaml
 
 Для удаленного управления kubernetes понадобится kubectl и helm, настроим их.
 
-###- kubectl
+### - kubectl
 
 Установка kubectl
 
@@ -414,7 +414,7 @@ iS0F29ALtIJzPh0LbXAKHa0l7nkSa5MD/tdnyRgih+CATJz1d+vozcKxNI8=
 
   
 
-##Развертывание Prometheus
+## Развертывание Prometheus
 
 За основу взят `stable/prometheus` https://hub.helm.sh/charts/stable/prometheus
 
@@ -485,6 +485,8 @@ helm repo update
 helm fetch --untar stable/grafana --version 3.5.8
 ```
 
+Настройки хранятся в `k8s/helm/grafana/values.yaml`
+
 Настраиваем:
 
 - ingress;
@@ -492,7 +494,7 @@ helm fetch --untar stable/grafana --version 3.5.8
 - провайдера dashboards (**пока не заработало**);
 - базовые dashboards (**пока не заработало**);
 
-Устанавливаем grafana;
+Устанавливаем grafana:
 
 ```sh
 GRAFANA_ADMIN_PASSWD=$(pwgen -n -c 8 1)
