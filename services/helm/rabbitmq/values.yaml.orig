@@ -57,12 +57,12 @@ rabbitmq:
   ## RabbitMQ application username
   ## ref: https://github.com/bitnami/bitnami-docker-rabbitmq#environment-variables
   ##
-  username: rabbitmq
+  username: user
 
   ## RabbitMQ application password
   ## ref: https://github.com/bitnami/bitnami-docker-rabbitmq#environment-variables
   ##
-  password: rabbitmq
+  # password:
   # existingPasswordSecret: name-of-existing-secret
 
   ## Erlang cookie to determine whether different nodes are allowed to communicate with each other
@@ -104,7 +104,7 @@ rabbitmq:
   ## Clustering settings
   clustering:
     address_type: hostname
-    k8s_domain: otus.local
+    k8s_domain: cluster.local
 
   loadDefinition:
     enabled: false
@@ -115,7 +115,7 @@ rabbitmq:
   configuration: |-
     ## Clustering
     cluster_formation.peer_discovery_backend  = rabbit_peer_discovery_k8s
-    cluster_formation.k8s.host = kubernetes.default.svc.otus.local
+    cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
     cluster_formation.node_cleanup.interval = 10
     cluster_formation.node_cleanup.only_log_warning = true
     cluster_partition_handling = autoheal
@@ -174,7 +174,7 @@ podLabels: {}
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 ##
 securityContext:
-  enabled: false
+  enabled: true
   fsGroup: 1001
   runAsUser: 1001
 
@@ -190,15 +190,12 @@ persistence:
   ##   GKE, AWS & OpenStack)
   ##
   # storageClass: "-"
-  storageClass: "data-rabbitmq"
   accessMode: ReadWriteOnce
 
   ## Existing PersistentVolumeClaims
   ## The value is evaluated as a template
   ## So, for example, the name can depend on .Release or .Chart
   # existingClaim: ""
-  #existingClaim: "pvc-data-rabbitmq"
-
 
   # If you change this value, you might have to adjust `rabbitmq.diskFreeLimit` as well.
   size: 8Gi
@@ -283,7 +280,7 @@ readinessProbe:
   successThreshold: 1
 
 metrics:
-  enabled: true
+  enabled: false
   image:
     registry: docker.io
     repository: kbudde/rabbitmq-exporter
