@@ -1,0 +1,15 @@
+---
+service:
+  internalPort: 8000
+  externalPort: 80
+
+image:
+  repository: mnsoldotus/crawler
+  tag: latest
+
+db_host:
+db_port:
+rmq_host:
+rmq_queue:
+rmq_username:
+rmq_password:
