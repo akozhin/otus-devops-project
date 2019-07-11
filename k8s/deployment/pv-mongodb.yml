@@ -22,16 +22,17 @@ spec:
   nfs:
     path: /srv/nfs_data/mongodb
     server: repo-server0
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: pvc-data-mongodb
-spec:
-  storageClassName: data-mongodb
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 8Gi
+# PersistentVolumeClaim не нужен, он запрашивается из helm monodb с привязкой к storageClassName
+#---
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   name: pvc-data-mongodb
+# spec:
+#   storageClassName: data-mongodb
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 8Gi

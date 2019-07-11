@@ -22,16 +22,16 @@ spec:
   nfs:
     path: /srv/nfs_data/rabbitmq
     server: repo-server0
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: pvc-data-rabbitmq
-spec:
-  storageClassName: data-rabbitmq
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 8Gi
+# ---
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   name: pvc-data-rabbitmq
+# spec:
+#   storageClassName: data-rabbitmq
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 8Gi
