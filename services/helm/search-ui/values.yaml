@@ -1,0 +1,11 @@
+---
+service:
+  internalPort: 8000
+  externalPort: 80
+
+image:
+  repository: mnsoldotus/search-ui
+  tag: latest
+
+db_host:
+db_port:
