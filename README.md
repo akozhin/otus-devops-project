@@ -507,3 +507,146 @@ kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-passwor
 ```
 
 Grafana доступна по ссылке http://grafana.otus.4ippi.ru
+
+## Подготовка приложения
+
+### Создание образов
+
+Для сборки образов приложений добавлены Dockerfile-ы на основе `python:3.6-alpine`
+Для локального запуска и тестирования добавлен compose-file, котоый включает mongodb и rabbitmq (версия с плагинами для управления).
+Интерфейс для управления rabbitmq доступен на порту 15672. При первом запуске необходимо создать очередь, с которой будет работать crawler.
+
+
+### Сборка docker образов
+
+Для сборки образов создан Makefile `services/Makefile`
+
+```sh
+cd services
+
+# собрать и запушить образ
+make docker-build-(ui|crawler)
+make docker-push-(ui|crawler)
+
+# собрать и запушить все образы
+make all
+```
+
+### Создание Helm Charts
+
+Созданы Helm Charts для каждого из компонентов приложения и главный Helm Chart приложения:
+
+- компонент приложения mongodb
+- компонент приложения rabbitmq
+- компонент приложения search-ui
+- компонент приложения crawler
+- приложение search-engine
+
+#### -компонент приложения mongodb
+
+За основу взят `stable/mongodb` https://hub.helm.sh/charts/stable/mongodb/0.4.18
+
+Получаем rabbitmq на локальный диск
+
+```sh
+cd services/helm
+helm repo update
+helm fetch --untar stable/mongodb --version 0.4.18
+```
+
+Настройки хранятся в `services/helm/mongodb/values.yaml`
+
+Настраиваем:
+
+- persistentVolume, который связан с заранее созданным запросом на том по классу `storageClassName` 
+- ! параметр  `existingClaim`  не указан в файле настроек, имя PersistentVolumeClaims формируется в шаблоне `services/helm/mongodb/templates/pvc.yaml` из наименования HelmChart+суффикс;
+
+#### -компонент приложения rabbitmq
+
+За основу взят `stable/rabbitmq` https://hub.helm.sh/charts/stable/rabbitmq
+
+Получаем rabbitmq на локальный диск
+
+```sh
+cd services/helm
+helm repo update
+helm fetch --untar stable/rabbitmq --version 6.1.5
+```
+
+Настройки хранятся в `services/helm/rabbitmq/values.yaml`
+
+Настраиваем:
+
+- persistentVolume, который связан с заранее созданным запросом на том по классу `storageClassName`;
+- включаем metrics;
+- отключен securityContext (контейнер не стартует, Permission denied при создании файла);
+- указано название кластера `k8s_domain` `cluster_formation.k8s.host`
+- при необходимости указываем учетную запись.
+
+#### -компонент приложения search-ui
+
+Helm chart для компонента приложения search-ui создан в директории `services/helm/search-ui`
+
+#### -компонент приложения crawler
+
+Helm chart для компонента приложения crawler создан в директории `services/helm/crawler`
+
+#### -приложение search-engine
+
+Главный helm chart приложения, который включает все компоненты приложения со всеми зависимостями.
+
+Загрузка зависимостей в helm chart приложения:
+
+```sh
+cd services/helm
+helm dep update search-engine
+```
+
+
+
+## Развертывание приложения в kubernetes
+
+#### Подготовительные мероприятия в кластере kubernetes
+
+Компонентам mongodb и crawler необходим PersistentVolume в кластере.
+
+PersistentVolume для этих компонентов подготовлены в директории `k8s/deployment`/
+
+Создадим PersistentVolume в кластере
+
+```sh
+kubectl apply -f k8s/deployment/pv-mongodb.yml -n default
+kubectl apply -f k8s/deployment/pv-rabbitmq.yml -n default
+```
+
+### Развертывание приложенияsearch-engine
+
+Развернуть приложения можно в кластере kubernetes можно с использованием подготовленных helm charts:
+
+- по отдельности каждый компонент;
+- все приложение через главный helm chart приложения.
+
+Пример развертывания отдельного компонента приложения:
+
+```sh
+cd services/helm
+helm upgrade --install mongodb mongodb/
+helm upgrade --install rabbitmq rabbitmq/
+helm upgrade --install crawler crawler/
+helm upgrade --install search-ui search-ui
+```
+
+Развертывание приложения со всеми зависимостями:
+
+```sh
+cd services/helm
+
+#обновляем изменения в зависимостях
+helm dep update search-engine
+
+#устанавливаем приложение
+helm upgrade --install search-engine search-engine/
+```
+
+Приложение доступно по ссылке http://otus.4ippi.ru
+
