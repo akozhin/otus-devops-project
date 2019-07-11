@@ -1,12 +1,15 @@
 # CHANGELOG
 
-**2019-07-10** Alexandr Kozhin
+**2019-07-11** Alexandr Kozhin
 
 - настроены стандартные helm чарты для mongodb и rabbitmq
 - добавлены helm чарты для приложений
 - добавлен helm чарт с зависимостями
 - добавлено описание проекта
 
+**2019-07-11** Maksim Soldatov
+
+- добавлен  volumes для mongodb и rabbitmq
 
 **2019-07-10** Alexandr Kozhin
 
