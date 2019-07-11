@@ -37,7 +37,6 @@ persistence:
   ##   GKE, AWS & OpenStack)
   ##
   # storageClass: "-"
-  storageClass: "data-mongodb"
   accessMode: ReadWriteOnce
   size: 8Gi
 
