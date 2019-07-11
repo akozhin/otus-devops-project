@@ -527,8 +527,18 @@ Grafana доступна по ссылке http://grafana.otus.4ippi.ru
 ### Создание образов
 
 Для сборки образов приложений добавлены Dockerfile-ы на основе `python:3.6-alpine`
+
+**Локальная разработка**
+
 Для локального запуска и тестирования добавлен compose-file, котоый включает mongodb и rabbitmq (версия с плагинами для управления).
-Интерфейс для управления rabbitmq доступен на порту 15672. При первом запуске необходимо создать очередь, с которой будет работать crawler.
+
+```sh
+docker-compose up -d
+```
+
+Интерфейс для управления rabbitmq доступен на порту 15672. 
+
+При первом запуске необходимо создать очередь, с которой будет работать crawler.
 
 
 ### Сборка docker образов
@@ -575,7 +585,7 @@ helm fetch --untar stable/mongodb --version 0.4.18
 - persistentVolume, который связан с заранее созданным запросом на том по классу `storageClassName` 
 - ! параметр  `existingClaim`  не указан в файле настроек, имя PersistentVolumeClaims формируется в шаблоне `services/helm/mongodb/templates/pvc.yaml` из наименования HelmChart+суффикс;
 
-#### -компонент приложения rabbitmq
+#### Компонент приложения rabbitmq
 
 За основу взят `stable/rabbitmq` https://hub.helm.sh/charts/stable/rabbitmq
 
