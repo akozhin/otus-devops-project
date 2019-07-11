@@ -1,5 +1,19 @@
 # Финальный проект по курсу Otus DevOps
 
+За основу взяты готовые приложения: 
+
+- [Search engine crawler](https://github.com/express42/search_engine_crawler)
+- [Search engine UI](https://github.com/express42/search_engine_ui)
+
+Развернута облачная инфраструктура, среда для развертывания приложений, инструменты сборки и развертывания, мониторинга и алертинга, визуализации.
+
+| Сервис            | Адрес                            |
+| ----------------- | -------------------------------- |
+| Приложение поиска | http://otus.4ippi.ru/            |
+| Gitlab            | http://gitlab.otus.4ippi.ru/     |
+| Grafana           | http://grafana.otus.4ippi.ru/    |
+| Prometheus        | http://prometheus.otus.4ippi.ru/ |
+
 ## Подготовка инфраструктуры с использованием trerraform
 
 Хранение состояния terraform реализовано на стороне GCP, для этого подними сегмент в GCP.
@@ -542,7 +556,7 @@ make all
 - компонент приложения crawler
 - приложение search-engine
 
-#### -компонент приложения mongodb
+#### Компонент приложения mongodb
 
 За основу взят `stable/mongodb` https://hub.helm.sh/charts/stable/mongodb/0.4.18
 
@@ -583,15 +597,15 @@ helm fetch --untar stable/rabbitmq --version 6.1.5
 - указано название кластера `k8s_domain` `cluster_formation.k8s.host`
 - при необходимости указываем учетную запись.
 
-#### -компонент приложения search-ui
+#### Компонент приложения search-ui
 
 Helm chart для компонента приложения search-ui создан в директории `services/helm/search-ui`
 
-#### -компонент приложения crawler
+#### Компонент приложения crawler
 
 Helm chart для компонента приложения crawler создан в директории `services/helm/crawler`
 
-#### -приложение search-engine
+#### Приложение search-engine
 
 Главный helm chart приложения, который включает все компоненты приложения со всеми зависимостями.
 
