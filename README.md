@@ -192,8 +192,6 @@ Dashboard доступен по ссылке https://104.155.1.48:6443/api/v1/na
 
 Для Persistent Volume в kubernetes, кластерную ФС в рамках проекта поднимать не будем, будем использовать NFS.
 
-NFS будет использоваться .
-
 Для создания NFS взята роль `geerlingguy.nfs` c ansible-galaxy. Получаем роль на локальный диск:
 
 ```sh
@@ -473,7 +471,7 @@ kubectl apply -f k8s/deployment/pv-prometheus-alertmanager.yml -n default
 
 Для alertmanager настроено:
 
-- интеграция со slack каналом (**но пока не проверена**)
+- интеграция со slack каналом (ничего не падало, поэтому пока не проверено)
 - persistentVolume, который связан с заранее созданным запросом на том по имени `existingClaim` и классу `storageClassName`;
 - алерты
   - alert: InstanceDown
@@ -505,8 +503,10 @@ helm fetch --untar stable/grafana --version 3.5.8
 
 - ingress;
 - datasource Prometheus по умолчанию;
-- провайдера dashboards (**пока не заработало**);
-- базовые dashboards (**пока не заработало**);
+- провайдера dashboards (автоматически пока не подхватывается);
+- базовые dashboards (автоматически пока не подхватывается);
+
+Импортирован dashboard [Kubernetes cluster monitoring (via Prometheus)](https://grafana.com/dashboards/315)
 
 Устанавливаем grafana:
 
