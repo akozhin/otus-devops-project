@@ -1,0 +1,14 @@
+# эти переменные главного chart переопределят переменные из зависимых charts
+crawler:
+  image:
+    repository: mnsoldotus/crawler
+    tag: latest
+  service:
+    externalPort: 80
+
+ui:
+  image:
+    repository: mnsoldotus/search-ui
+    tag: latest
+    service:
+      externalPort: 80
