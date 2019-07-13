@@ -718,3 +718,19 @@ helm upgrade --install search-engine search-engine/
 
 - настроено оповещении о сбое компонента search-ui `alert: Application-Search-UI-Down`
 - Настроено оповещении о сбое компонента crawler `alert: Application-Crawler-Down`
+
+### Визуализация метрик
+
+Создан простой dashboard для приложения Search-UI с параметризацией по `namespace`.
+
+Dashboard включает 3 графика:
+
+- 95% quantile of web page gen time
+
+- Rate of web pages served
+
+- Rate of web page gen time sum                           
+
+
+
+   

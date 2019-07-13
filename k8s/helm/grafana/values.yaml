@@ -323,7 +323,7 @@ dashboardProviders:
   #     b64content: true
 dashboards:
   default:
-    Kubernetes_cluster_monitoring:
+    prometheus-stats:
       gnetId: 315
       datasource: Prometheus
 
