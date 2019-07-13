@@ -958,7 +958,7 @@ pushgateway:
 alertmanagerFiles:
   alertmanager.yml:
     global:
-      slack_api_url: 'https://hooks.slack.com/services/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'
+      slack_api_url: 'https://hooks.slack.com/services/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'
 
     #receivers:
       #- name: default-receiver
@@ -998,7 +998,7 @@ serverFiles:
     groups:
     - name: Instances
       rules:
-      - alert: InstanceDown
+      - alert: Instance-Down
         #expr: avg(up{job="kubernetes-nodes"}) BY (job) < 0.25 <--25% узлов не доступно https://www.robustperception.io/alerting-on-down-instances
         expr: up{job="kubernetes-nodes"} == 0
         for: 1m
@@ -1009,7 +1009,7 @@ serverFiles:
           summary: 'Instance {{ $labels.instance }} down'
     - name: APIServers
       rules:
-      - alert: InstanceAPIServerDown
+      - alert: Instance-API-Server-Down
         expr: up{job="kubernetes-apiservers"} == 0
         for: 1m
         labels:
@@ -1017,6 +1017,26 @@ serverFiles:
         annotations:
           description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute'
           summary: 'Instance API server {{ $labels.instance }} down'
+    - name: ApplicationSearchUI
+      rules:
+      - alert: Application-Search-UI-Down
+        expr: up{job="search-ui-endpoints"} == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute'
+          summary: 'Application Search UI {{ $labels.instance }} down'
+    - name: ApplicationCrawler
+      rules:
+      - alert: Application-Crawler-Down
+        expr: up{job="crawler-endpoints"} == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute'
+          summary: 'Application Crawler {{ $labels.instance }} down'
 
   rules: {}
 
@@ -1282,7 +1302,8 @@ serverFiles:
             target_label: kubernetes_pod_name
 
       # # мониторинг приложения, по лейблу app, который содержится во всех компонентах seach-ui, crawler
-      # # в теории, эот мониторинг не нужен, если настроен мониторинг каждого компонента (см ниже)
+      # # в теории, этот мониторинг не нужен, если настроен мониторинг каждого компонента (см ниже)
+      # # т.к. данный мониторинг не даст представления к какому компоненту относится, а он не один в приложении
       # - job_name: 'search-engine-endpoints'
       #   kubernetes_sd_configs:
       #     - role: endpoints
