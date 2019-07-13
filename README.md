@@ -674,3 +674,10 @@ helm upgrade --install search-engine search-engine/
 
 Приложение доступно по ссылке http://otus.4ippi.ru
 
+## Мониторинг приложения
+
+Настройка мониторинга endpoints приложения указана в файле `k8s/helm/prometheus/values.yaml`:
+
+- job_name: 'search-ui-endpoints
+- job_name: 'crawler-endpoints'
+

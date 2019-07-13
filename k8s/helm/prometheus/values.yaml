@@ -1281,6 +1281,54 @@ serverFiles:
             action: replace
             target_label: kubernetes_pod_name
 
+      # # мониторинг приложения, по лейблу app, который содержится во всех компонентах seach-ui, crawler
+      # # в теории, эот мониторинг не нужен, если настроен мониторинг каждого компонента (см ниже)
+      # - job_name: 'search-engine-endpoints'
+      #   kubernetes_sd_configs:
+      #     - role: endpoints
+      #   relabel_configs:
+      #     - source_labels: [__meta_kubernetes_service_label_app, __meta_kubernetes_namespace]
+      #       action: keep
+      #       regex: search-engine;(default|dev|prod|stage)+
+      #     - action: labelmap
+      #       regex: __meta_kubernetes_service_label_(.+)
+      #     - source_labels: [__meta_kubernetes_namespace]
+      #       target_label: kubernetes_namespace
+      #     - source_labels: [__meta_kubernetes_service_name]
+      #       target_label: kubernetes_name
+
+      # мониторинг конкретного компонента, по имени лейбла component, который содержится в seach-ui, crawler
+      # но каждый компонент содержит свое значение в лейбле component
+      - job_name: 'search-ui-endpoints'
+        kubernetes_sd_configs:
+          - role: endpoints
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_label_component, __meta_kubernetes_namespace]
+            action: keep
+            regex:  search-ui;(default|dev|prod|stage)+
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            target_label: kubernetes_name
+
+      # мониторинг конкретного компонента, по имени лейбла component, который содержится в seach-ui, crawler
+      # но каждый компонент содержит свое значение в лейбле component
+      - job_name: 'crawler-endpoints'
+        kubernetes_sd_configs:
+          - role: endpoints
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_label_component, __meta_kubernetes_namespace]
+            action: keep
+            regex:  crawler;(default|dev|prod|stage)+
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            target_label: kubernetes_name
+
 # adds additional scrape configs to prometheus.yml
 # must be a string so you have to add a | after extraScrapeConfigs:
 # example adds prometheus-blackbox-exporter scrape config
