@@ -323,8 +323,11 @@ dashboardProviders:
   #     b64content: true
 dashboards:
   default:
-    prometheus-stats:
+    k8s-stat:
       gnetId: 315
+      datasource: Prometheus
+    app-search-ui-stat:
+      url: https://raw.githubusercontent.com/akozhin/otus-devops-project/master/k8s/helm/grafana/dashboards/app_search_ui.json
       datasource: Prometheus
 
 ## Reference to external ConfigMap per provider. Use provider name as key and ConfiMap name as value.

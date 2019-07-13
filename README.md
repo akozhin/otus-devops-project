@@ -721,7 +721,7 @@ helm upgrade --install search-engine search-engine/
 
 ### Визуализация метрик
 
-Создан простой dashboard для приложения Search-UI с параметризацией по `namespace`.
+Создан простой dashboard для приложения Search-UI `k8s/helm/grafana/dashboards/app_search_ui.json` с параметризацией по `namespace` .
 
 Dashboard включает 3 графика:
 
