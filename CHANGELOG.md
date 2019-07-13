@@ -1,5 +1,10 @@
 # CHANGELOG
 
+**2019-07-13** Maksim Soldatov
+
+- настроен мониторинг компонентов приложения
+- настроено оповещение (alerts)
+
 **2019-07-11** Alexandr Kozhin
 
 - настроены стандартные helm чарты для mongodb и rabbitmq

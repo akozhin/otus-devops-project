@@ -471,7 +471,7 @@ kubectl apply -f k8s/deployment/pv-prometheus-alertmanager.yml -n default
 
 Для alertmanager настроено:
 
-- интеграция со slack каналом (ничего не падало, поэтому пока не проверено)
+- интеграция со slack каналом;
 - persistentVolume, который связан с заранее созданным запросом на том по имени `existingClaim` и классу `storageClassName`;
 - алерты
   - alert: InstanceDown
@@ -676,8 +676,45 @@ helm upgrade --install search-engine search-engine/
 
 ## Мониторинг приложения
 
+###Сбор метрик
+
 Настройка мониторинга endpoints приложения указана в файле `k8s/helm/prometheus/values.yaml`:
 
-- job_name: 'search-ui-endpoints
-- job_name: 'crawler-endpoints'
+- Метрики компонента приложения search-ui `job_name: 'search-ui-endpoints`
 
+  Список метрик:
+
+  `web_page_gen_time_bucket`
+
+  `web_page_gen_time_count`
+
+  `web_page_gen_time_sum`
+
+  `web_pages_served`
+
+- Метрики компонента приложения crawler `job_name: 'crawler-endpoints'`
+
+  Список метрик:
+
+  `crawler_page_parse_time_bucket`
+
+  `crawler_page_parse_time_count`
+
+  `crawler_page_parse_time_sum`
+
+  `crawler_pages_parsed`
+
+  `crawler_site_connection_time_bucket`
+
+  `crawler_site_connection_time_count`
+
+  `crawler_site_connection_time_sum`
+
+### Оповещения (alerts)
+
+Ранее была настроена отправка оповещений в slack канал.
+
+Настройки оповещений указаны в файле `k8s/helm/prometheus/values.yaml`:
+
+- настроено оповещении о сбое компонента search-ui `alert: Application-Search-UI-Down`
+- Настроено оповещении о сбое компонента crawler `alert: Application-Crawler-Down`
