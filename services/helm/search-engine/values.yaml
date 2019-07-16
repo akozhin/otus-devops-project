@@ -6,7 +6,7 @@ crawler:
   service:
     externalPort: 80
 
-ui:
+search-ui:
   image:
     repository: mnsoldotus/search-ui
     tag: latest
