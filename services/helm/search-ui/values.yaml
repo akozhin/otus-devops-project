@@ -7,5 +7,8 @@ image:
   repository: mnsoldotus/search-ui
   tag: latest
 
+ingress:
+  hostName: otus.4ippi.ru
+
 db_host:
 db_port:
