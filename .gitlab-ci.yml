@@ -5,7 +5,6 @@ stages:
   - test
   - review
   - release
-  - deploy
   - cleanup
   - staging
   - prod
