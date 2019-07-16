@@ -7,6 +7,8 @@ stages:
   - release
   - deploy
   - cleanup
+  - staging
+  - prod
 
 build:
   stage: build
@@ -80,6 +82,41 @@ stop_review:
     kubernetes: active
   except:
     - master
+
+staging:
+  stage: staging
+  script:
+    - install_dependencies
+    - ensure_namespace
+    - install_tiller
+    - deploy
+  variables:
+    KUBE_NAMESPACE: staging
+    INGRESS_HOSTNAME_SEARCH_UI: staging.otus.4ippi.ru
+  environment:
+    name: staging
+    url: http://staging.otus.4ippi.ru
+  only:
+    refs:
+      - master
+
+prod:
+  stage: prod
+  script:
+    - install_dependencies
+    - ensure_namespace
+    - install_tiller
+    - deploy
+  variables:
+    KUBE_NAMESPACE: prod
+    INGRESS_HOSTNAME_SEARCH_UI: otus.4ippi.ru
+  environment:
+    name: production
+    url: http://otus.4ippi.ru
+  when: manual
+  only:
+    refs:
+      - master
 
 .auto_devops: &auto_devops |
   [[ "$TRACE" ]] && set -x

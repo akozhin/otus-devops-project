@@ -1310,7 +1310,7 @@ serverFiles:
       #   relabel_configs:
       #     - source_labels: [__meta_kubernetes_service_label_app, __meta_kubernetes_namespace]
       #       action: keep
-      #       regex: search-engine;(default|review|dev|prod|stage)+
+      #       regex: search-engine;(default|review|dev|prod|staging)+
       #     - action: labelmap
       #       regex: __meta_kubernetes_service_label_(.+)
       #     - source_labels: [__meta_kubernetes_namespace]
@@ -1326,7 +1326,7 @@ serverFiles:
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_label_component, __meta_kubernetes_namespace]
             action: keep
-            regex:  search-ui;(default|review|dev|prod|stage)+
+            regex:  search-ui;(default|review|dev|prod|staging)+
           - action: labelmap
             regex: __meta_kubernetes_service_label_(.+)
           - source_labels: [__meta_kubernetes_namespace]
@@ -1342,7 +1342,7 @@ serverFiles:
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_label_component, __meta_kubernetes_namespace]
             action: keep
-            regex:  crawler;(default|review|dev|prod|stage)+
+            regex:  crawler;(default|review|dev|prod|staging)+
           - action: labelmap
             regex: __meta_kubernetes_service_label_(.+)
           - source_labels: [__meta_kubernetes_namespace]
