@@ -1,0 +1,242 @@
+image: alpine:latest
+
+stages:
+  - build
+  - test
+  - review
+  - release
+  - deploy
+  - cleanup
+
+build:
+  stage: build
+  image: docker:git
+  services:
+    - docker:dind
+  script:
+    - setup_docker
+    - build
+  variables:
+    DOCKER_DRIVER: overlay2
+  only:
+    - branches
+
+test:
+  stage: test
+  script:
+    - echo Testing application Searh UI ...
+    - exit 0
+  only:
+    - branches
+
+release:
+  stage: release
+  image: docker
+  services:
+    - docker:dind
+  script:
+    - setup_docker
+    - release
+  only:
+    - master
+
+review:
+  stage: review
+  script:
+    - install_dependencies
+    - ensure_namespace
+    - ensure_volume
+    - install_tiller
+    - deploy
+  variables:
+    KUBE_NAMESPACE: review
+    INGRESS_HOSTNAME_SEARCH_UI: ${CI_ENVIRONMENT_SLUG}.${KUBE_INGRESS_BASE_DOMAIN}
+  environment:
+    name: review/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME
+    url: http://${CI_ENVIRONMENT_SLUG}.${KUBE_INGRESS_BASE_DOMAIN}
+    on_stop: stop_review
+  only:
+    refs:
+      - branches
+    kubernetes: active
+  except:
+    - master
+
+stop_review:
+  stage: cleanup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - install_dependencies
+    - delete
+  environment:
+    name: review/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME
+    action: stop
+  when: manual
+  allow_failure: true
+  only:
+    refs:
+      - branches
+    kubernetes: active
+  except:
+    - master
+
+.auto_devops: &auto_devops |
+  [[ "$TRACE" ]] && set -x
+  export CI_REGISTRY="index.docker.io"
+  export CI_BIN_REPO_OWNER=$CI_REGISTRY/$CI_REGISTRY_USER
+  export CI_APPLICATION_NAME_UI=search-ui
+  export CI_APPLICATION_NAME_CRAWLER=crawler
+  export CI_APPLICATION_TAG=$CI_COMMIT_REF_SLUG
+  export CI_CONTAINER_NAME=ci_job_build_${CI_JOB_ID}
+  export TILLER_NAMESPACE="kube-system"
+  echo "CI_BIN_REPO_OWNER=${CI_BIN_REPO_OWNER}"
+  echo "CI_APPLICATION_TAG=${CI_APPLICATION_TAG}"
+  echo "CI_CONTAINER_NAME=${CI_CONTAINER_NAME}"
+  #env
+
+  function setup_docker() {
+    echo "Setup docker"
+
+    if ! docker info &>/dev/null; then
+      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
+        export DOCKER_HOST='tcp://localhost:2375'
+      fi
+    fi
+  }
+
+  function build() {
+    echo "Building Dockerfile-based application..."
+
+    echo `git show --format="%h" HEAD | head -1` > build_info.txt
+    echo `git rev-parse --abbrev-ref HEAD` >> build_info.txt
+    docker build -t "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_UI}:$CI_APPLICATION_TAG" services/search-ui
+    docker build -t "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_CRAWLER}:$CI_APPLICATION_TAG" services/crawler
+    echo ""
+
+    if [[ -n "$CI_REGISTRY_USER" ]]; then
+      echo "Logging to GitLab Container Registry with CI credentials..."
+      docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+      echo ""
+    fi
+
+    echo "Pushing to GitLab Container Registry..."
+    docker push "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_UI}:$CI_APPLICATION_TAG"
+    docker push "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_CRAWLER}:$CI_APPLICATION_TAG"
+    echo ""
+  }
+
+  function release() {
+    echo "Updating docker images ..."
+
+    if [[ -n "$CI_REGISTRY_USER" ]]; then
+      echo "Logging to GitLab Container Registry with CI credentials..."
+      docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+      echo ""
+    fi
+
+    docker pull "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_UI}:$CI_APPLICATION_TAG"
+    docker tag "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_UI}:$CI_APPLICATION_TAG" "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_UI}:$(cat services/search-ui/VERSION)"
+    docker push "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_UI}:$(cat services/search-ui/VERSION)"
+
+    docker pull "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_CRAWLER}:$CI_APPLICATION_TAG"
+    docker tag "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_CRAWLER}:$CI_APPLICATION_TAG" "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_CRAWLER}:$(cat services/crawler/VERSION)"
+    docker push "${CI_BIN_REPO_OWNER}/${CI_APPLICATION_NAME_CRAWLER}:$(cat services/crawler/VERSION)"
+
+    echo ""
+  }
+
+  function install_dependencies() {
+    echo "Install dependencies"
+
+    apk add -U openssl curl tar gzip bash ca-certificates git
+    wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
+    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.23-r3/glibc-2.23-r3.apk
+    apk add glibc-2.23-r3.apk
+    rm glibc-2.23-r3.apk
+
+    curl https://kubernetes-helm.storage.googleapis.com/helm-v2.13.1-linux-amd64.tar.gz | tar zx
+
+    mv linux-amd64/helm /usr/bin/
+    helm version --client
+
+    curl  -o /usr/bin/sync-repo.sh https://raw.githubusercontent.com/kubernetes/helm/master/scripts/sync-repo.sh
+    chmod a+x /usr/bin/sync-repo.sh
+
+    curl -L -o /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.14.3/bin/linux/amd64/kubectl
+    chmod +x /usr/bin/kubectl
+    kubectl version --client
+  }
+
+  function ensure_namespace() {
+    echo "Creating namespace"
+    kubectl describe namespace "$KUBE_NAMESPACE" || kubectl create namespace "$KUBE_NAMESPACE"
+  }
+
+  function ensure_volume() {
+    echo "Creating Persistent Volumes"
+    kubectl describe pv pv-data-mongodb-review -n "$KUBE_NAMESPACE" || kubectl apply -f http://gitlab.otus.4ippi.ru/mnsold/otus-devops-project/raw/master/k8s/deployment/pv-mongodb-review.yml -n "$KUBE_NAMESPACE"
+    kubectl describe pv pv-data-rabbitmq-review -n "$KUBE_NAMESPACE" || kubectl apply -f http://gitlab.otus.4ippi.ru/mnsold/otus-devops-project/raw/master/k8s/deployment/pv-rabbitmq-review.yml -n "$KUBE_NAMESPACE"
+  }
+
+  function install_tiller() {
+    echo "Checking Tiller..."
+
+    helm init --upgrade --force-upgrade
+    kubectl rollout status -n "$TILLER_NAMESPACE" -w "deployment/tiller-deploy"
+    if ! helm version --debug; then
+      echo "Failed to init Tiller."
+      return 1
+    fi
+    echo ""
+  }
+
+  function deploy() {
+    echo "Deploy"
+
+    track="${1-stable}"
+    name="$CI_ENVIRONMENT_SLUG"
+    echo "track="$track
+    echo "name="$name
+
+    if [[ "$track" != "stable" ]]; then
+      name="$name-$track"
+      echo "name="$name
+    fi
+
+    echo "Clone deploy repository..."
+    git clone http://gitlab.otus.4ippi.ru/$CI_PROJECT_NAMESPACE/otus-devops-project.git
+
+    echo "Download helm dependencies..."
+    helm dep update services/helm/search-engine
+
+    echo "Deploy helm release $name to $KUBE_NAMESPACE"
+    helm upgrade --install \
+      --wait \
+      --set mongodb.persistence.storageClass="data-mongodb-"$KUBE_NAMESPACE \
+      --set rabbitmq.persistence.storageClass="data-rabbitmq-"$KUBE_NAMESPACE \
+      --set search-ui.ingress.hostName="$INGRESS_HOSTNAME_SEARCH_UI" \
+      --set crawler.image.tag=$CI_APPLICATION_TAG \
+      --set search-ui.image.tag=$CI_APPLICATION_TAG \
+      --namespace="$KUBE_NAMESPACE" \
+      --version="$CI_PIPELINE_ID-$CI_JOB_ID" \
+      "$name" \
+     services/helm/search-engine
+  }
+
+  function delete() {
+    echo "Delete"
+
+    track="${1-stable}"
+    name="$CI_ENVIRONMENT_SLUG"
+    echo "track="$track
+    echo "name="$name
+    helm delete "$name" --purge || true
+    #По каким то причинам, helm не подчищает за собой PVC от rabbitmq, удаляем принудительно
+    kubectl delete pvc $(kubectl get pvc -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' -n review|grep rabbitmq|head -n1) -n review
+    kubectl delete -f http://gitlab.otus.4ippi.ru/mnsold/otus-devops-project/raw/master/k8s/deployment/pv-mongodb-review.yml -n "$KUBE_NAMESPACE"
+    kubectl delete -f http://gitlab.otus.4ippi.ru/mnsold/otus-devops-project/raw/master/k8s/deployment/pv-rabbitmq-review.yml -n "$KUBE_NAMESPACE"
+  }
+
+before_script:
+  - *auto_devops
