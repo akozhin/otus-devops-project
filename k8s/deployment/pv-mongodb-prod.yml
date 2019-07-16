@@ -27,9 +27,9 @@ spec:
 # kind: PersistentVolumeClaim
 # apiVersion: v1
 # metadata:
-#   name: pvc-data-mongodb
+#   name: pvc-data-mongodb-prod
 # spec:
-#   storageClassName: data-mongodb
+#   storageClassName: data-mongodb-prod
 #   volumeMode: Filesystem
 #   accessModes:
 #     - ReadWriteOnce

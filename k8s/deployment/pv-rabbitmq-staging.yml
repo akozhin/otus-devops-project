@@ -4,9 +4,9 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: pv-data-rabbitmq-stage
+  name: pv-data-rabbitmq-staging
 spec:
-  storageClassName: data-rabbitmq-stage
+  storageClassName: data-rabbitmq-staging
   capacity:
     storage: 8Gi
   volumeMode: Filesystem
@@ -20,15 +20,15 @@ spec:
     - hard
     - nfsvers=4.1
   nfs:
-    path: /srv/nfs_data/rabbitmq-stage
+    path: /srv/nfs_data/rabbitmq-staging
     server: repo-server0
 # ---
 # kind: PersistentVolumeClaim
 # apiVersion: v1
 # metadata:
-#   name: pvc-data-rabbitmq-stage
+#   name: pvc-data-rabbitmq-staging
 # spec:
-#   storageClassName: data-rabbitmq-stage
+#   storageClassName: data-rabbitmq-staging
 #   volumeMode: Filesystem
 #   accessModes:
 #     - ReadWriteOnce

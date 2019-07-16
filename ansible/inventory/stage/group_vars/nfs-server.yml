@@ -3,9 +3,9 @@ nfs_exports:
   - /srv/nfs_data/prometheus-alertmanager -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
   - /srv/nfs_data/rabbitmq -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
   - /srv/nfs_data/rabbitmq-review -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
-  - /srv/nfs_data/rabbitmq-stage -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
+  - /srv/nfs_data/rabbitmq-staging -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
   - /srv/nfs_data/rabbitmq-prod -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
   - /srv/nfs_data/mongodb -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
   - /srv/nfs_data/mongodb-review -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
-  - /srv/nfs_data/mongodb-stage -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
+  - /srv/nfs_data/mongodb-staging -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
   - /srv/nfs_data/mongodb-prod -rw,async,nohide,no_subtree_check,insecure,no_root_squash *.project-otus-201902.internal
