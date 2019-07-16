@@ -1,18 +1,54 @@
 # Финальный проект по курсу Otus DevOps
 
-За основу взяты готовые приложения: 
+**Участники:**
+
+- Александр Кожин
+- Максим Солдатов
+
+**Требования к проекту:**
+
+- [x] 1) Автоматизированные процессы создания и управления платформой
+
+  - [x] Ресурсы GCP
+  - [x] Инфраструктура для CI/CD
+  - [x] Инфраструктура для сбора обратной связи
+
+- [x] 2) Использование практики IaC (Infrastructure as Code) для управления конфигурацией и инфраструктурой 
+
+- [x] 3) Настроен процесс CI/CD 
+
+- [x] 4) Все, что имеет отношение к проекту хранится в GitТребования
+
+- [x] 5) Настроен процесс сбора обратной связи 
+
+  - [x] Мониторинг (сбор метрик, алертинг, визуализация) 
+  - [ ]  Логирование (опционально) 
+  - [ ] Трейсинг (опционально) 
+  - [ ]  ChatOps (опционально) 
+
+- [x] 6) Документация 
+
+  - [x] README по работе с репозиторием 
+  - [x] Описание приложения и его архитектуры  (в ссылках к готовым приложениям, которые использованы в проекте)
+  - [x] How to start (по ходу README)
+  - [x] CHANGELOG с описанием выполненной работы 
+  - [x] Если работа в группе, то пункт включает автора изменений
+
+**За основу взяты готовые приложения: **
 
 - [Search engine crawler](https://github.com/express42/search_engine_crawler)
 - [Search engine UI](https://github.com/express42/search_engine_ui)
 
-Развернута облачная инфраструктура, среда для развертывания приложений, инструменты сборки и развертывания, мониторинга и алертинга, визуализации.
+**Ссылки на сервисы проекта:**
 
-| Сервис            | Адрес                            |
-| ----------------- | -------------------------------- |
-| Приложение поиска | http://otus.4ippi.ru/            |
-| Gitlab            | http://gitlab.otus.4ippi.ru/     |
-| Grafana           | http://grafana.otus.4ippi.ru/    |
-| Prometheus        | http://prometheus.otus.4ippi.ru/ |
+| Сервис                                | Адрес                            |
+| ------------------------------------- | -------------------------------- |
+| Приложение поиска (prod окружение)    | http://otus.4ippi.ru/            |
+| Gitlab                                | http://gitlab.otus.4ippi.ru/     |
+| Grafana                               | http://grafana.otus.4ippi.ru/    |
+| Prometheus                            | http://prometheus.otus.4ippi.ru/ |
+| Приложение поиска (staging окружение) | http://staging.otus.4ippi.ru/    |
+| Приложение поиска (review окружение)  | Wildcard DNS запись              |
 
 ## Подготовка инфраструктуры с использованием trerraform
 
@@ -50,23 +86,22 @@ terraform apply
 
 В качестве DNS сервера использован один из бесплатных сервисов, в который по ходу развертывания проекта вносились `A` записи:
 
-- otus.4ippi.ru - LoadBalancer для k8s node поднятый terraform;
-
+- otus.4ippi.ru - LoadBalancer для k8s node поднятый terraform, использовано в качестве prod окружения приложения в ci/cd;
+- staging.otus.4ippi.ru - использовано в качестве staging окружения приложения в ci/cd;
 - gitlab.otus.4ippi.ru - GitLab;
-
 - prometheus.otus.4ippi.ru - Prometheus
-
 - grafana.otus.4ippi.ru - Grafana
+- для review окружения приложения в ci/cd, которое генерирует под домен использована Wildcard DNS запись типа `*.example.com`
 
-  
+
 
 ## Подготовка ВМ с использованием ansible
 
 ### ansible inventory
 
-Inventory выполнен в комбинации динамический + статический инвентори.
+Inventory выполнен в комбинации динамический + статический inventory.
 
-Динамический инвентори выполнен с использованием плагина gcp_compute. Статический инвентори нужен для создания родительских групп.
+Динамический inventoryвыполнен с использованием плагина gcp_compute. Статический inventoryнужен для создания родительских групп.
 
 Структура inventory:
 
@@ -77,9 +112,9 @@ inventory/stage/
 └── inventory.static.yml
 ```
 
-Для вызова одновременного вызова  динамический + статический инвентори, указываем на директорию, а не на файл инвентори.
+Для вызова одновременного вызова  динамический + статический inventory, указываем на директорию, а не на файл inventory.
 
-Проверка динамического инвентори:
+Проверка динамического inventory:
 
 ```rst
 cd ansible
@@ -317,117 +352,6 @@ GitLab доступен по ссылке http://gitlab.otus.4ippi.ru/
 
 
 
-### Настройка интеграции GitLab с Kubernetes
-
-В Admin Area > Kubernetes добавляем существующий кластер.
-
-В GitLab входит справка, по нажатию More information под полем, для получения нужной информации для интеграции. Выполнено в соответствии с руководством.
-
-- Получаем API URL:
-
-```sh
-kubectl cluster-info | grep 'Kubernetes master' | awk '/http/ {print $NF}'
-https://104.155.1.48:6443
-```
-
-- Получаем CA certificate:
-
-```sh
-kubectl get secrets|grep -iE "name|default-token"
-NAME                                        TYPE                                  DATA   AGE
-default-token-7cwxq                         kubernetes.io/service-account-token   3      2d13h
-
-kubectl get secret default-token-7cwxq -o jsonpath="{['data']['ca\.crt']}" | base64 --decode
------BEGIN CERTIFICATE-----
-MIICyDCCAbCgAwIBAgIBADANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwprdWJl
-cm5ldGVzMB4XDTE5MDcwNzE3Mjc1NFoXDTI5MDcwNDE3Mjc1NFowFTETMBEGA1UE
-...
-llugMIZyGf6TlZfgwkK+u8AiZJs4/dw0MrVViHjF75S7oxv2u6xK8n3uUV/jC24g
-iS0F29ALtIJzPh0LbXAKHa0l7nkSa5MD/tdnyRgih+CATJz1d+vozcKxNI8=
------END CERTIFICATE-----
-```
-
-- Получаем Service Token
-
-  - Применяем манифест с пользователем `gitlab-admin`
-
-    ```yaml
-    cat <<EOF | kubectl apply -f -
-    apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: gitlab-admin
-      namespace: kube-system
-    ---
-    apiVersion: rbac.authorization.k8s.io/v1beta1
-    kind: ClusterRoleBinding
-    metadata:
-      name: gitlab-admin
-    roleRef:
-      apiGroup: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: cluster-admin
-    subjects:
-    - kind: ServiceAccount
-      name: gitlab-admin
-      namespace: kube-system
-    EOF
-    ```
-
-  - Получаем token  пользователя `gitlab-admin`
-
-    ```sh
-    kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep gitlab-admin | awk '{print $1}')
-    ```
-
-    Пример вывода
-
-    ```rst
-    Name:         gitlab-admin-token-4v4lf
-    Namespace:    kube-system
-    Labels:       <none>
-    Annotations:  kubernetes.io/service-account.name: gitlab-admin
-                  kubernetes.io/service-account.uid: 736b3451-a2e3-11e9-8caa-42010a84000e
-    
-    Type:  kubernetes.io/service-account-token
-    
-    Data
-    ====
-    ca.crt:     1025 bytes
-    namespace:  11 bytes
-    token: <authentication_token>
-    ```
-
-- Указываем полученную информацию, завершаем интеграцию.
-
-  > Снять галку с `GitLab-managed cluster`, иначе GitLab вместо использования учетной записи `gitlab-admin` будет создавать дополнительные сервисные аккаунты и пытаться развернуть приложения с использованием этих сервисных аккаунтов.
-
-- В Application устанавливаем 
-
-  - Helm Tiller (ставить первым, до установки др. приложений из списка в интеграции с кластером)
-
-  - GitLab Runner
-
-    > При необходимости можно еще установить доступные приложения из списка в интеграции:
-    >
-    > - Ingress
-    >   Ingress gives you a way to route requests to services based on the request host or path, centralizing a number of services into a single entrypoint. 
-    > - Cert-Manager
-    >   Cert-Manager is a native Kubernetes certificate management controller that helps with issuing certificates. Installing Cert-Manager on your cluster will issue a certificate by Let's Encrypt and ensure that certificates are valid and up-to-date.
-    > - Prometheus
-    >   Prometheus is an open-source monitoring system with GitLab Integration to monitor deployed applications.
-
-- Проверка
-
-  ```sh
-  kubectl get pods -n gitlab-managed-apps
-  NAME                                   READY   STATUS    RESTARTS   AGE
-  runner-gitlab-runner-7c8fb8457-pnxts   1/1     Running   0          38m
-  tiller-deploy-7fb68896db-9bflz         1/1     Running   0          41m
-  ```
-
-  
-
 ## Развертывание Prometheus
 
 За основу взят `stable/prometheus` https://hub.helm.sh/charts/stable/prometheus
@@ -487,6 +411,8 @@ helm upgrade prometheus k8s/helm/prometheus --install
 
 Prometheus доступен по ссылке http://prometheus.otus.4ippi.ru/
 
+
+
 ## Развертывание Grafana
 
 За основу взят `stable/grafana` https://hub.helm.sh/charts/stable/grafana
@@ -523,6 +449,8 @@ kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-passwor
 ```
 
 Grafana доступна по ссылке http://grafana.otus.4ippi.ru
+
+
 
 ## Подготовка приложения
 
@@ -676,6 +604,8 @@ helm upgrade --install search-engine search-engine/
 
 Приложение доступно по ссылке http://otus.4ippi.ru
 
+
+
 ## Мониторинг приложения
 
 ###Сбор метрик
@@ -723,7 +653,7 @@ helm upgrade --install search-engine search-engine/
 
 ### Визуализация метрик
 
-Создан простой dashboard для приложения Search-UI `k8s/helm/grafana/dashboards/app_search_ui.json` с параметризацией по `namespace` .
+Создан dashboard для приложения Search-UI `k8s/helm/grafana/dashboards/app_search_ui.json` с параметризацией по `namespace` .
 
 Dashboard включает 3 графика:
 
@@ -735,4 +665,185 @@ Dashboard включает 3 графика:
 
 
 
-   
+## GitLab CI/CD
+
+### Подготовительные мероприятия
+
+#### Подготовка томов
+
+В связи с тем, что используем свой kubernetes, хоть и на серверах GCP, многие возможности не доступны, подготовим Persisten Volumes для CI/CD.
+
+Подготавливаем NFS для mongo/rabbitmq в review/stage/prod `ansible/inventory/stage/group_vars/nfs-server.yml` и применяем настройки
+
+```sh
+cd ansible
+ansible-playbook -i inventory/stage/ -v -l repo playbooks/nfs.yaml
+```
+
+Создаем Persisten Volumes в kubernetes:
+
+```sh
+kubectl apply -f k8s/deployment/pv-mongodb-staging.yml
+kubectl apply -f k8s/deployment/pv-mongodb-prod.yml
+kubectl apply -f k8s/deployment/pv-rabbitmq-staging.yml
+kubectl apply -f k8s/deployment/pv-rabbitmq-prod.yml
+```
+
+>    Тома для `review` заранее не создаем, том будет автоматически создаваться и освобождаться в pipelines CI/CD.
+
+#### Удаление приложения search-engine в namespace default
+
+Ранее приложение было установлено в `namespace=default`, удалим его, т.к. в рамках CI/CD будут использованы namespace для review/staging/prod и приложения в default больше не будет.
+
+```sh
+helm delete $(helm ls -a|grep search-engine|grep default|awk '{print $1}') --purge
+kubectl delete pvc $(kubectl get pvc -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' -n default|grep rabbitmq|head -n1) -n default
+kubectl delete -f k8s/deployment/pv-mongodb.yml
+kubectl delete -f k8s/deployment/pv-rabbitmq.yml
+```
+
+### Настройка интеграции GitLab с Kubernetes
+
+В Admin Area > Kubernetes добавляем существующий кластер.
+
+В GitLab входит справка, по нажатию More information под полем, для получения нужной информации для интеграции. Выполнено в соответствии с руководством.
+
+- Получаем API URL:
+
+```sh
+kubectl cluster-info | grep 'Kubernetes master' | awk '/http/ {print $NF}'
+https://104.155.1.48:6443
+```
+
+- Получаем CA certificate:
+
+```sh
+kubectl get secrets|grep -iE "name|default-token"
+NAME                                        TYPE                                  DATA   AGE
+default-token-7cwxq                         kubernetes.io/service-account-token   3      2d13h
+
+kubectl get secret default-token-7cwxq -o jsonpath="{['data']['ca\.crt']}" | base64 --decode
+-----BEGIN CERTIFICATE-----
+MIICyDCCAbCgAwIBAgIBADANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwprdWJl
+cm5ldGVzMB4XDTE5MDcwNzE3Mjc1NFoXDTI5MDcwNDE3Mjc1NFowFTETMBEGA1UE
+...
+llugMIZyGf6TlZfgwkK+u8AiZJs4/dw0MrVViHjF75S7oxv2u6xK8n3uUV/jC24g
+iS0F29ALtIJzPh0LbXAKHa0l7nkSa5MD/tdnyRgih+CATJz1d+vozcKxNI8=
+-----END CERTIFICATE-----
+```
+
+- Получаем Service Token
+
+  - Применяем манифест с пользователем `gitlab-admin`
+
+    ```yaml
+    cat <<EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: gitlab-admin
+      namespace: kube-system
+    ---
+    apiVersion: rbac.authorization.k8s.io/v1beta1
+    kind: ClusterRoleBinding
+    metadata:
+      name: gitlab-admin
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: cluster-admin
+    subjects:
+    - kind: ServiceAccount
+      name: gitlab-admin
+      namespace: kube-system
+    EOF
+    ```
+
+  - Получаем token  пользователя `gitlab-admin`
+
+    ```sh
+    kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep gitlab-admin | awk '{print $1}')
+    ```
+
+    Пример вывода
+
+    ```rst
+    Name:         gitlab-admin-token-4v4lf
+    Namespace:    kube-system
+    Labels:       <none>
+    Annotations:  kubernetes.io/service-account.name: gitlab-admin
+                  kubernetes.io/service-account.uid: 736b3451-a2e3-11e9-8caa-42010a84000e
+    
+    Type:  kubernetes.io/service-account-token
+    
+    Data
+    ====
+    ca.crt:     1025 bytes
+    namespace:  11 bytes
+    token: <authentication_token>
+    ```
+
+- Указываем полученную информацию, завершаем интеграцию.
+
+  > Снять галку с `GitLab-managed cluster`, иначе GitLab вместо использования учетной записи `gitlab-admin` будет создавать дополнительные сервисные аккаунты и пытаться развернуть приложения с использованием этих сервисных аккаунтов.
+
+- В Application устанавливаем 
+
+  - Helm Tiller (ставить первым, до установки др. приложений из списка в интеграции с кластером)
+
+  - GitLab Runner
+
+    > При необходимости можно еще установить доступные приложения из списка в интеграции:
+    >
+    > - Ingress
+    >   Ingress gives you a way to route requests to services based on the request host or path, centralizing a number of services into a single entrypoint. 
+    > - Cert-Manager
+    >   Cert-Manager is a native Kubernetes certificate management controller that helps with issuing certificates. Installing Cert-Manager on your cluster will issue a certificate by Let's Encrypt and ensure that certificates are valid and up-to-date.
+    > - Prometheus
+    >   Prometheus is an open-source monitoring system with GitLab Integration to monitor deployed applications.
+
+- Проверка
+
+  ```sh
+  kubectl get pods -n gitlab-managed-apps
+  NAME                                   READY   STATUS    RESTARTS   AGE
+  runner-gitlab-runner-7c8fb8457-pnxts   1/1     Running   0          38m
+  tiller-deploy-7fb68896db-9bflz         1/1     Running   0          41m
+  ```
+
+### CI/CD
+
+В CI/CD реализованы следующие этапы (stages):
+
+- build - сборка приложения;
+
+- test - тестирование приложения (в данном этапе функционирует заглушка);
+
+- review - обзор и проверка приложения, приложение развертывается в динамическом доменном имени с использованием wilcard DNS записи;
+
+- release - отправка образов на Docker Hub;
+
+- cleanup - очистка окружения review, выполняется в ручную по кнопке в pipeline;
+
+- staging - развертывание приложения в окружении staging, приложение доступно по ссылке http://staging.otus.4ippi.ru/;
+
+- prod- развертывание приложения в окружении prod, приложение доступно по ссылке http://otus.4ippi.ru/.
+
+Общий принцип работы CI/CD:
+
+- коммит в branch 
+
+  - автоматически выполняются этапы build/test/review;
+  - в ручную в pipeline выполняется cleanup (stop_review).
+
+- коммит в master
+
+  - автоматически выполняются этапы build/test/release/staging;
+  - в ручную в pipeline выполняется развертывание в prod окружение.
+
+
+
+**PS:**
+
+Дополнительные материалы представлены в директории `assets`.
+
