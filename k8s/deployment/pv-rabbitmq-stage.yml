@@ -1,0 +1,37 @@
+---
+#https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistent-volumes
+#ноды требуют установленный nfs-utils
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-data-rabbitmq-stage
+spec:
+  storageClassName: data-rabbitmq-stage
+  capacity:
+    storage: 8Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - rw
+    - _netdev
+    - noatime
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: /srv/nfs_data/rabbitmq-stage
+    server: repo-server0
+# ---
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   name: pvc-data-rabbitmq-stage
+# spec:
+#   storageClassName: data-rabbitmq-stage
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 8Gi

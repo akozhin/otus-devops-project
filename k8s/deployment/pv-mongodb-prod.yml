@@ -1,0 +1,38 @@
+---
+#https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistent-volumes
+#ноды требуют установленный nfs-utils
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-data-mongodb-prod
+spec:
+  storageClassName: data-mongodb-prod
+  capacity:
+    storage: 8Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - rw
+    - _netdev
+    - noatime
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: /srv/nfs_data/mongodb-prod
+    server: repo-server0
+# PersistentVolumeClaim не нужен, он запрашивается из helm monodb с привязкой к storageClassName
+#---
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   name: pvc-data-mongodb
+# spec:
+#   storageClassName: data-mongodb
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 8Gi
