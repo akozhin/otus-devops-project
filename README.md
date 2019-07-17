@@ -608,7 +608,7 @@ helm upgrade --install search-engine search-engine/
 
 ## Мониторинг приложения
 
-###Сбор метрик
+### Сбор метрик
 
 Настройка мониторинга endpoints приложения указана в файле `k8s/helm/prometheus/values.yaml`:
 
